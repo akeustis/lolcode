@@ -1,7 +1,9 @@
 package main
 
-import "lol/parser"
+import (
+	//"lol/tokenizer"
+	//"fmt"
+)
 
 func main() {
-	parser.Parse()
 }
