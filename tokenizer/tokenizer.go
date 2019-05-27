@@ -2,6 +2,7 @@ package tokenizer
 
 import (
 	"bufio"
+	"strconv"
 	"strings"
 )
 
@@ -120,29 +121,49 @@ txtLine:
 
 // EmitTokens parses a Lolcode reader and emits a stream of Tokens
 func EmitTokens(reader *bufio.Reader, out chan<- Token) {
-	defer close(out)
 	frags := make(chan string, 100)
 	go emitFragments(reader, frags)
 	for word := range frags {
-		// Emit as many phrase tokens as we can
-		if word, ok := emitPhraseToken(word, frags, out); !ok {
-			switch {
-			case word == "": // end of input
-				return
-			case word[0] == '"': // string literal
-				out <- stringLiteralToToken(word)
+		// Emit as many phrase tokens as possible
+		for ok := true; ok; {
+			word, ok = parsePhraseToken(word, frags, out)
+		}
+		switch {
+		case word == "": // end of input
+			close(out)
+			return
+		case word == "WIN": // TROOF literal
+			out <- Token{TokLiteral, true}
+		case word == "FAIL":
+			out <- Token{TokLiteral, false}
+		case word == "NOOB": // NOOB is a literal; casting to type NOOB is not allowed
+			out <- Token{TokLiteral, nil}
+		case word[0] == '"': // yarn literal
+			out <- yarnLiteralToToken(word)
+		case isIdentifier(word):
+			out <- Token{TokIdent, word}
+		default:
+			if numbr, err := strconv.ParseInt(word, 0, 64); err == nil {
+				out <- Token{TokLiteral, numbr}
+				continue
 			}
+			if numbar, err := strconv.ParseFloat(word, 64); err == nil {
+				out <- Token{TokLiteral, numbar}
+				continue
+			}
+			out <- Token{TokErr, "Syntax error: unexpected token " + word}
 		}
 	}
 }
 
 // Reads a phrase starting with the given fragment (word)
 // uses single-word look-ahead to parse as long a phrase as possible
-func emitPhraseToken(word string, frags <-chan string, out chan<- Token) (string, bool) {
+func parsePhraseToken(word string, frags <-chan string, out chan<- Token) (string, bool) {
 	phraseNode := phraseRoot
 	hasRead := false
 	for {
-		if phraseNode = phraseNode.nodes[word]; phraseNode == nil {
+		nextNode := phraseNode.nodes[word]
+		if nextNode == nil {
 			if hasRead {
 				token := Token{phraseNode.t, nil}
 				if token.Type == TokErr {
@@ -155,12 +176,33 @@ func emitPhraseToken(word string, frags <-chan string, out chan<- Token) (string
 			return word, false
 		}
 		hasRead = true
+		phraseNode = nextNode
 		word = <-frags
 	}
 }
 
+func isIdentifier(s string) bool {
+	if len(s) == 0 || !isLetter(s[0]) {
+		return false
+	}
+	for i := 1; i < len(s); i++ {
+		if l := s[i]; !isLetter(l) && !isNumberOrUnderscore(l) {
+			return false
+		}
+	}
+	return true
+}
+
+func isLetter(l byte) bool {
+	return l >= 'a' && l <= 'z' || l >= 'A' && l <= 'Z'
+}
+
+func isNumberOrUnderscore(l byte) bool {
+	return l >= '0' && l <= '9' || l == '_'
+}
+
 // TODO: add string escaping
-func stringLiteralToToken(str string) Token {
+func yarnLiteralToToken(str string) Token {
 	// String literal must end with '"' and have length at least 2
 	if l := len(str); l < 2 || str[l-1] != '"' {
 		return Token{TokErr, "Invalid string literal: " + str}
