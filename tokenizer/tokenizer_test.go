@@ -55,7 +55,7 @@ KTHXBYE
 `
 
 func TestEmitTokens(t *testing.T) {
-	T := func(t TokenType) Token {
+	T := func(t int) Token {
 		return Token{t, nil}
 	}
 	L := func(i interface{}) Token {

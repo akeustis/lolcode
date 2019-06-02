@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type TokenType uint
+// Token is key/value pair with a int key and interface{} value
 type Token struct {
-	Type  TokenType
+	Type  int
 	Value interface{}
 }
 
@@ -24,10 +24,33 @@ const (
 	TokITZ
 	TokR
 	TokIIZ
+	TokSUMOF
+	TokDIFFOF
+	TokPRODUKTOF
+	TokQUOSHUNTOF
+	TokAN
+	TokMKAY
+	NumTokens
 )
 
+var phraseRoot = initPhrases([]phraseInit{
+	{TokEOL, "\n"},
+	{TokHAI, "HAI"},
+	{TokKTHXBYE, "KTHXBYE"},
+	{TokIHASA, "I HAS A"},
+	{TokITZ, "ITZ"},
+	{TokR, "R"},
+	{TokIIZ, "I IZ"},
+	{TokSUMOF, "SUM OF"},
+	{TokDIFFOF, "DIFF OF"},
+	{TokPRODUKTOF, "PRODUKT OF"},
+	{TokQUOSHUNTOF, "QUOSHUNT OF"},
+	{TokAN, "AN"},
+	{TokMKAY, "MKAY"},
+})
+
 type phraseNode struct {
-	t     TokenType
+	t     int
 	nodes map[string]*phraseNode
 }
 
@@ -36,7 +59,7 @@ func newPhraseNode() *phraseNode {
 }
 
 type phraseInit struct {
-	t      TokenType
+	t      int
 	phrase string
 }
 
@@ -49,7 +72,7 @@ func initPhrases(phraseInits []phraseInit) *phraseNode {
 }
 
 // Recursively build phrase tree
-func initPhrase(root *phraseNode, t TokenType, words []string) {
+func initPhrase(root *phraseNode, t int, words []string) {
 	if len(words) == 0 {
 		root.t = t
 		return
@@ -62,16 +85,6 @@ func initPhrase(root *phraseNode, t TokenType, words []string) {
 	}
 	initPhrase(node, t, words[1:])
 }
-
-var phraseRoot = initPhrases([]phraseInit{
-	{TokEOL, "\n"},
-	{TokHAI, "HAI"},
-	{TokKTHXBYE, "KTHXBYE"},
-	{TokIHASA, "I HAS A"},
-	{TokITZ, "ITZ"},
-	{TokR, "R"},
-	{TokIIZ, "I IZ"},
-})
 
 // emitFragments reads from a bufio.Reader and emits string fragments on the given channel,
 // omitting all comments and converting line separators "," into "\n" fragments
