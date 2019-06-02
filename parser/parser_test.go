@@ -23,14 +23,14 @@ func init() {
 	fetchSecond := func(args []interface{}) interface{} { return args[1] }
 	sum := func(args []interface{}) interface{} {
 		sum := int64(0)
-		for _, a := range args {
+		for _, a := range args[1].([]interface{}) {
 			sum += a.(int64)
 		}
 		return sum
 	}
 	prod := func(args []interface{}) interface{} {
 		prod := int64(1)
-		for _, a := range args {
+		for _, a := range args[1].([]interface{}) {
 			prod *= a.(int64)
 		}
 		return prod
@@ -42,7 +42,7 @@ func init() {
 }
 
 func TestMath(t *testing.T) {
-	str := "SUM OF 3 4 5\n"
+	str := "SUM OF 3 4 AN 5\n"
 	reader := bufio.NewReader(strings.NewReader(str))
 	tokens := make(chan tokenizer.Token, 100)
 	go tokenizer.EmitTokens(reader, tokens)

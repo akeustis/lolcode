@@ -95,7 +95,8 @@ func (d *Dialect) parseRule(r *rule, curr *tokenizer.Token, more <-chan tokenize
 	if r.isRepeating {
 		var result []interface{}
 		for {
-			curr, val, ok := d.parseRuleSingle(r, curr, more)
+			cur, val, ok := d.parseRuleSingle(r, curr, more)
+			curr = cur // If we don't do this, inner var curr shadows parameter curr
 			if !ok {
 				return curr, result, true
 			}
@@ -115,7 +116,8 @@ func (d *Dialect) parseRuleSingle(r *rule, curr *tokenizer.Token, more <-chan to
 			id = -id
 			optional = true
 		}
-		curr, val, ok := d.parseNode(id, curr, more)
+		cur, val, ok := d.parseNode(id, curr, more)
+		curr = cur
 		switch {
 		case ok:
 			if vals == nil {
