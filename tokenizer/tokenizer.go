@@ -2,6 +2,7 @@ package tokenizer
 
 import (
 	"bufio"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -10,6 +11,10 @@ import (
 type Token struct {
 	Type  int
 	Value interface{}
+}
+
+func (t Token) String() string {
+	return fmt.Sprint(t.Value)
 }
 
 // Exported token types
@@ -34,7 +39,7 @@ const (
 )
 
 var phraseRoot = initPhrases([]phraseInit{
-	{TokEOL, "\n"},
+	{TokEOL, EOLPhrase},
 	{TokHAI, "HAI"},
 	{TokKTHXBYE, "KTHXBYE"},
 	{TokIHASA, "I HAS A"},
@@ -52,10 +57,11 @@ var phraseRoot = initPhrases([]phraseInit{
 type phraseNode struct {
 	t     int
 	nodes map[string]*phraseNode
+	msg   string
 }
 
 func newPhraseNode() *phraseNode {
-	return &phraseNode{TokErr, make(map[string]*phraseNode)}
+	return &phraseNode{TokErr, make(map[string]*phraseNode), ""}
 }
 
 type phraseInit struct {
@@ -66,15 +72,16 @@ type phraseInit struct {
 func initPhrases(phraseInits []phraseInit) *phraseNode {
 	phraseRoot := newPhraseNode()
 	for _, init := range phraseInits {
-		initPhrase(phraseRoot, init.t, strings.Split(init.phrase, " "))
+		initPhrase(phraseRoot, init.t, strings.Split(init.phrase, " "), init.phrase)
 	}
 	return phraseRoot
 }
 
 // Recursively build phrase tree
-func initPhrase(root *phraseNode, t int, words []string) {
+func initPhrase(root *phraseNode, t int, words []string, msg string) {
 	if len(words) == 0 {
 		root.t = t
+		root.msg = msg
 		return
 	}
 	word := words[0]
@@ -83,8 +90,11 @@ func initPhrase(root *phraseNode, t int, words []string) {
 		node = newPhraseNode()
 		root.nodes[word] = node
 	}
-	initPhrase(node, t, words[1:])
+	initPhrase(node, t, words[1:], msg)
 }
+
+// How EOL is displayed in errors and such
+const EOLPhrase = "End-of-line"
 
 // emitFragments reads from a bufio.Reader and emits string fragments on the given channel,
 // omitting all comments and converting line separators "," into "\n" fragments
@@ -121,13 +131,13 @@ txtLine:
 			for i := start; i < len(fragments); i++ {
 				if fragments[i] == "BTW" {
 					if i > start {
-						out <- "\n"
+						out <- EOLPhrase
 					}
 					continue txtLine
 				}
 				out <- fragments[i]
 			}
-			out <- "\n"
+			out <- EOLPhrase
 		}
 	}
 }
@@ -178,7 +188,7 @@ func parsePhraseToken(word string, frags <-chan string, out chan<- Token) (strin
 		nextNode := phraseNode.nodes[word]
 		if nextNode == nil {
 			if hasRead {
-				token := Token{phraseNode.t, nil}
+				token := Token{phraseNode.t, phraseNode.msg}
 				if token.Type == TokErr {
 					// If we have an TokError, fill in a parser error as the value
 					token.Value = getErrMessageForPhrase(phraseNode, word)
@@ -227,7 +237,6 @@ func yarnLiteralToToken(str string) Token {
 func getErrMessageForPhrase(node *phraseNode, word string) string {
 	var out strings.Builder
 	w := out.WriteString
-	w("Syntax error at ")
 	w(word)
 	w(": expected ")
 	sep := ""

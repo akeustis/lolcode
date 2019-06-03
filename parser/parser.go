@@ -1,6 +1,10 @@
 package parser
 
-import "lol/tokenizer"
+import (
+	"fmt"
+	"lol/tokenizer"
+	"os"
+)
 
 // Dialect is a collection of parser nodes that form a language
 type Dialect struct {
@@ -65,6 +69,11 @@ func (d *Dialect) rule(i int, isRepeating bool, p Parser, args []int) {
 // Parse will parse a channel of supplied tokens according to the rules of the dialect
 func (d *Dialect) Parse(start int, tokens <-chan tokenizer.Token,
 ) (*tokenizer.Token, interface{}, bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			os.Stderr.WriteString(fmt.Sprintf("%v", r))
+		}
+	}()
 	first := <-tokens
 	return d.parseNode(start, &first, tokens)
 }
@@ -128,7 +137,7 @@ func (d *Dialect) parseRuleSingle(r *rule, curr *tokenizer.Token, more <-chan to
 			if vals == nil {
 				return curr, nil, false
 			}
-			panic(curr) // syntax error, we parsed one and failed another
+			panic(fmt.Sprintln("Unexpected token:", curr))
 		}
 	}
 	return curr, r.parse(vals), true

@@ -20,15 +20,15 @@ KTHXBYE
 `
 
 func TestEmitFragments(t *testing.T) {
-	expected := []string{"HAI", "1.2", "\n",
-		"tok0", "\n", "tok1", "\n",
-		"tok2", "\n",
-		"tok3", "\n",
-		"tok4", "OBTW", "illegal", "comment", "\n",
-		"tok5", "\n",
-		"tok6", "\n",
-		"tok7", "\n",
-		"KTHXBYE", "\n"}
+	expected := []string{"HAI", "1.2", EOLPhrase,
+		"tok0", EOLPhrase, "tok1", EOLPhrase,
+		"tok2", EOLPhrase,
+		"tok3", EOLPhrase,
+		"tok4", "OBTW", "illegal", "comment", EOLPhrase,
+		"tok5", EOLPhrase,
+		"tok6", EOLPhrase,
+		"tok7", EOLPhrase,
+		"KTHXBYE", EOLPhrase}
 	reader := bufio.NewReader(strings.NewReader(lolCode))
 	fragments := make(chan string, 100)
 	go emitFragments(reader, fragments)
@@ -55,22 +55,19 @@ KTHXBYE
 `
 
 func TestEmitTokens(t *testing.T) {
-	T := func(t int) Token {
-		return Token{t, nil}
-	}
 	L := func(i interface{}) Token {
 		return Token{TokLiteral, i}
 	}
 	I := func(s string) Token {
 		return Token{TokIdent, s}
 	}
-	EOL := T(TokEOL)
+	EOL := Token{TokEOL, EOLPhrase}
 	expected := []Token{
-		T(TokHAI), L(float64(1.2)), EOL,
-		T(TokIHASA), I("FISH"), T(TokITZ), L(int64(5)), EOL,
-		I("FISH"), T(TokR), L("foo"), EOL,
+		Token{TokHAI, "HAI"}, L(float64(1.2)), EOL,
+		Token{TokIHASA, "I HAS A"}, I("FISH"), Token{TokITZ, "ITZ"}, L(int64(5)), EOL,
+		I("FISH"), Token{TokR, "R"}, L("foo"), EOL,
 		L(true), EOL, L(false), EOL, L(nil), EOL,
-		T(TokKTHXBYE), EOL,
+		Token{TokKTHXBYE, "KTHXBYE"}, EOL,
 	}
 	reader := bufio.NewReader(strings.NewReader(lolCode2))
 	tokens := make(chan Token, 100)

@@ -42,17 +42,43 @@ func init() {
 }
 
 func TestMath(t *testing.T) {
-	str := "SUM OF 3 4 AN 5\n"
+	type testCase struct {
+		code     string
+		expected int64
+	}
+	testCases := []testCase{
+		// 3+4+5
+		{"SUM OF 3 4 AN 5\n", 12},
+		// (3+4)*5
+		{"PRODUKT OF SUM OF 3 AN 4 MKAY AN 5\n", 35},
+		// 3 + (4*5) + ((2+1)*3)
+		{"SUM OF 3 AN PRODUKT OF 4 AN 5 MKAY AN PRODUKT OF SUM OF 2 1 MKAY 3\n", 32},
+		{"SUM OF MKAY\n", 0},
+		{"PRODUKT OF\n", 1},
+	}
+	for _, tc := range testCases {
+		reader := bufio.NewReader(strings.NewReader(tc.code))
+		tokens := make(chan tokenizer.Token, 100)
+		go tokenizer.EmitTokens(reader, tokens)
+		cur, val, ok := d.Parse(Expr, tokens)
+		switch {
+		case !ok:
+			t.Fatalf("Parse unsuccessful")
+		case *cur != tokenizer.Token{tokenizer.TokEOL, tokenizer.EOLPhrase}:
+			t.Fatalf("Expected token mismatch")
+		case val.(int64) != tc.expected:
+			t.Fatalf("Parse returned %d, expected %d", val.(int64), tc.expected)
+		}
+	}
+}
+
+func TestPanic(t *testing.T) {
+	str := "SUM OF 3 AN\n"
 	reader := bufio.NewReader(strings.NewReader(str))
 	tokens := make(chan tokenizer.Token, 100)
 	go tokenizer.EmitTokens(reader, tokens)
-	cur, val, ok := d.Parse(Expr, tokens)
-	switch {
-	case !ok:
-		t.Fatalf("Parse unsuccessful")
-	case *cur != tokenizer.Token{Type: tokenizer.TokEOL, Value: nil}:
-		t.Fatalf("Expected token mismatch")
-	case val.(int64) != 12:
-		t.Fatalf("Parse returned wrong value")
+	_, _, ok := d.Parse(Expr, tokens)
+	if ok {
+		t.Fatalf("Expected failure")
 	}
 }
