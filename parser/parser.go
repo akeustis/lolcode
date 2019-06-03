@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"lol/tokenizer"
+	"lol/token"
 	"os"
 )
 
@@ -67,8 +67,8 @@ func (d *Dialect) rule(i int, isRepeating bool, p Parser, args []int) {
 }
 
 // Parse will parse a channel of supplied tokens according to the rules of the dialect
-func (d *Dialect) Parse(start int, tokens <-chan tokenizer.Token,
-) (*tokenizer.Token, interface{}, bool) {
+func (d *Dialect) Parse(start int, tokens <-chan token.Token,
+) (*token.Token, interface{}, bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			os.Stderr.WriteString(fmt.Sprintf("%v", r))
@@ -78,8 +78,8 @@ func (d *Dialect) Parse(start int, tokens <-chan tokenizer.Token,
 	return d.parseNode(start, &first, tokens)
 }
 
-func (d *Dialect) parseNode(id int, curr *tokenizer.Token, more <-chan tokenizer.Token,
-) (*tokenizer.Token, interface{}, bool) {
+func (d *Dialect) parseNode(id int, curr *token.Token, more <-chan token.Token,
+) (*token.Token, interface{}, bool) {
 	// base case is a single token
 	if id < d.numToks {
 		if curr.Type == id {
@@ -99,8 +99,8 @@ func (d *Dialect) parseNode(id int, curr *tokenizer.Token, more <-chan tokenizer
 }
 
 // Attempt to parse the given rule
-func (d *Dialect) parseRule(r *rule, curr *tokenizer.Token, more <-chan tokenizer.Token,
-) (*tokenizer.Token, interface{}, bool) {
+func (d *Dialect) parseRule(r *rule, curr *token.Token, more <-chan token.Token,
+) (*token.Token, interface{}, bool) {
 	if r.isRepeating {
 		var result []interface{}
 		for {
@@ -116,8 +116,8 @@ func (d *Dialect) parseRule(r *rule, curr *tokenizer.Token, more <-chan tokenize
 }
 
 // Attempt to parse a single pass of the given rule
-func (d *Dialect) parseRuleSingle(r *rule, curr *tokenizer.Token, more <-chan tokenizer.Token,
-) (*tokenizer.Token, interface{}, bool) {
+func (d *Dialect) parseRuleSingle(r *rule, curr *token.Token, more <-chan token.Token,
+) (*token.Token, interface{}, bool) {
 	var vals []interface{}
 	for i := 0; i < len(r.nodes); i++ {
 		id, optional := r.nodes[i], false
@@ -137,7 +137,7 @@ func (d *Dialect) parseRuleSingle(r *rule, curr *tokenizer.Token, more <-chan to
 			if vals == nil {
 				return curr, nil, false
 			}
-			panic(fmt.Sprintln("Unexpected token:", curr))
+			panic(fmt.Sprintln("Unexpected token", curr))
 		}
 	}
 	return curr, r.parse(vals), true

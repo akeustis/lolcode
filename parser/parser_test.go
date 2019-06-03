@@ -2,20 +2,20 @@ package parser
 
 import (
 	"bufio"
-	"lol/tokenizer"
+	"lol/token"
 	"strings"
 	"testing"
 )
 
 const (
-	Expr = iota + tokenizer.NumTokens
+	Expr = iota + token.NumTokens
 	ExprList
 	Sum
 	Prod
 	NumNodes
 )
 
-var d = NewDialect(tokenizer.NumTokens, NumNodes)
+var d = NewDialect(token.NumTokens, NumNodes)
 
 func init() {
 	// Define a basic calculator grammar for testing
@@ -35,10 +35,10 @@ func init() {
 		}
 		return prod
 	}
-	d.Rule(Expr, fetchFirst, tokenizer.TokLiteral)
-	d.Rule(Expr, sum, tokenizer.TokSUMOF, ExprList, -tokenizer.TokMKAY)
-	d.Rule(Expr, prod, tokenizer.TokPRODUKTOF, ExprList, -tokenizer.TokMKAY)
-	d.RepRule(ExprList, fetchSecond, -tokenizer.TokAN, Expr)
+	d.Rule(Expr, fetchFirst, token.Literal)
+	d.Rule(Expr, sum, token.SUMOF, ExprList, -token.MKAY)
+	d.Rule(Expr, prod, token.PRODUKTOF, ExprList, -token.MKAY)
+	d.RepRule(ExprList, fetchSecond, -token.AN, Expr)
 }
 
 func TestMath(t *testing.T) {
@@ -58,13 +58,13 @@ func TestMath(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		reader := bufio.NewReader(strings.NewReader(tc.code))
-		tokens := make(chan tokenizer.Token, 100)
-		go tokenizer.EmitTokens(reader, tokens)
+		tokens := make(chan token.Token, 100)
+		go token.EmitTokens(reader, tokens)
 		cur, val, ok := d.Parse(Expr, tokens)
 		switch {
 		case !ok:
 			t.Fatalf("Parse unsuccessful")
-		case *cur != tokenizer.Token{tokenizer.TokEOL, tokenizer.EOLPhrase}:
+		case *cur != token.Token{token.EOL, token.EOLPhrase}:
 			t.Fatalf("Expected token mismatch")
 		case val.(int64) != tc.expected:
 			t.Fatalf("Parse returned %d, expected %d", val.(int64), tc.expected)
@@ -75,8 +75,19 @@ func TestMath(t *testing.T) {
 func TestPanic(t *testing.T) {
 	str := "SUM OF 3 AN\n"
 	reader := bufio.NewReader(strings.NewReader(str))
-	tokens := make(chan tokenizer.Token, 100)
-	go tokenizer.EmitTokens(reader, tokens)
+	tokens := make(chan token.Token, 100)
+	go token.EmitTokens(reader, tokens)
+	_, _, ok := d.Parse(Expr, tokens)
+	if ok {
+		t.Fatalf("Expected failure")
+	}
+}
+
+func TestPanic2(t *testing.T) {
+	str := "SUM OF 3 AN SUM\n"
+	reader := bufio.NewReader(strings.NewReader(str))
+	tokens := make(chan token.Token, 100)
+	go token.EmitTokens(reader, tokens)
 	_, _, ok := d.Parse(Expr, tokens)
 	if ok {
 		t.Fatalf("Expected failure")

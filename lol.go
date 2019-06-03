@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"lol/tokenizer"
+	//"lol/token"
 	//"fmt"
 )
 
