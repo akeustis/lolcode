@@ -34,35 +34,35 @@ func nilFunc(args []interface{}) interface{} {
 func varPredicate(args []interface{}) interface{} {
 	ident := args[0].(string)
 	pred := args[1].(pred)
-	return func(ns *namespace) {
+	return statement(func(ns *namespace) {
 		pred(ident, ns)
-	}
+	})
 }
 
 func emptyPredicate(args []interface{}) interface{} {
-	return func(ident string, ns *namespace) {
+	return pred(func(ident string, ns *namespace) {
 		ns.vars["IT"] = ns.getOrPanic(ident)
-	}
+	})
 }
 
 func rExpr(args []interface{}) interface{} {
 	expr := args[1].(expr)
-	return func(ident string, ns *namespace) {
+	return pred(func(ident string, ns *namespace) {
 		ns.putOrPanic(ident, expr(ns))
-	}
+	})
 }
 
 func ihasaVarItz(args []interface{}) interface{} {
 	ident := args[1].(string)
 	if args[2] == nil { // ITZ is optional
-		return func(ns *namespace) {
+		return statement(func(ns *namespace) {
 			ns.vars[ident] = nil
-		}
+		})
 	}
 	expr := args[2].(expr)
-	return func(ns *namespace) {
+	return statement(func(ns *namespace) {
 		ns.vars[ident] = expr(ns)
-	}
+	})
 }
 
 func itzExpr(args []interface{}) interface{} {
@@ -71,22 +71,22 @@ func itzExpr(args []interface{}) interface{} {
 
 func bareExpr(args []interface{}) interface{} {
 	expr := args[0].(expr)
-	return func(ns *namespace) {
+	return statement(func(ns *namespace) {
 		ns.vars["IT"] = expr(ns)
-	}
+	})
 }
 
 func literal(args []interface{}) interface{} {
-	return func(ns *namespace) interface{} {
+	return expr(func(ns *namespace) interface{} {
 		return args[0]
-	}
+	})
 }
 
 func ident(args []interface{}) interface{} {
 	ident := args[0].(string)
-	return func(ns *namespace) interface{} {
+	return expr(func(ns *namespace) interface{} {
 		return ns.getOrPanic(ident)
-	}
+	})
 }
 
 func getNumericValue(val interface{}, useFloat bool) interface{} {
