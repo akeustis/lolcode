@@ -28,11 +28,26 @@ const (
 	IHASA
 	ITZ
 	R
+	MAEK
+	A
+	ISNOWA
 	IIZ
+	BOTHSAEM
+	DIFFRINT
+	BIGGROF
+	SMALLROF
 	SUMOF
 	DIFFOF
 	PRODUKTOF
 	QUOSHUNTOF
+	MODOF
+	NOT
+	BOTHOF
+	EITHEROF
+	WONOF
+	ANYOF
+	ALLOF
+	SMOOSH
 	AN
 	MKAY
 	NumTokens
@@ -45,11 +60,26 @@ var phraseRoot = initPhrases([]phraseInit{
 	{IHASA, "I HAS A"},
 	{ITZ, "ITZ"},
 	{R, "R"},
+	{MAEK, "MAEK"},
+	{A, "A"},
+	{ISNOWA, "IS NOW A "},
 	{IIZ, "I IZ"},
+	{BOTHSAEM, "BOTH SAEM"},
+	{DIFFRINT, "DIFFRINT"},
+	{BIGGROF, "BIGGR OF"},
+	{SMALLROF, "SMALLR OF"},
 	{SUMOF, "SUM OF"},
 	{DIFFOF, "DIFF OF"},
 	{PRODUKTOF, "PRODUKT OF"},
 	{QUOSHUNTOF, "QUOSHUNT OF"},
+	{MODOF, "MOD OF"},
+	{NOT, "NOT"},
+	{BOTHOF, "BOTH OF"},
+	{EITHEROF, "EITHER OF"},
+	{WONOF, "WON OF"},
+	{ALLOF, "ALL OF"},
+	{ANYOF, "ANY OF"},
+	{SMOOSH, "SMOOSH"},
 	{AN, "AN"},
 	{MKAY, "MKAY"},
 })

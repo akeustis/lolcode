@@ -33,6 +33,8 @@ func init() {
 	// Expr
 	D.Rule(Expr, literal, token.Literal)
 	D.Rule(Expr, ident, token.Ident)
+	D.Rule(Expr, bothsaemXAnY, token.BOTHSAEM, Expr, -token.AN, Expr)
+	D.Rule(Expr, diffrintXAnY, token.DIFFRINT, Expr, -token.AN, Expr)
 	D.Rule(Expr, sumofXAnY, token.SUMOF, Expr, token.AN, Expr)
 	D.Rule(Expr, diffofXAnY, token.DIFFOF, Expr, token.AN, Expr)
 	D.Rule(Expr, prodofXAnY, token.PRODUKTOF, Expr, token.AN, Expr)

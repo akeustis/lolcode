@@ -27,18 +27,7 @@ type statement func(*namespace)
 type expr func(*namespace) interface{}
 type pred func(string, *namespace)
 
-func nilFunc(args []interface{}) interface{} {
-	return nil
-}
-
-func varPredicate(args []interface{}) interface{} {
-	ident := args[0].(string)
-	pred := args[1].(pred)
-	return statement(func(ns *namespace) {
-		pred(ident, ns)
-	})
-}
-
+// pred
 func emptyPredicate(args []interface{}) interface{} {
 	return pred(func(ident string, ns *namespace) {
 		ns.vars["IT"] = ns.getOrPanic(ident)
@@ -49,6 +38,15 @@ func rExpr(args []interface{}) interface{} {
 	expr := args[1].(expr)
 	return pred(func(ident string, ns *namespace) {
 		ns.putOrPanic(ident, expr(ns))
+	})
+}
+
+// statement
+func varPredicate(args []interface{}) interface{} {
+	ident := args[0].(string)
+	pred := args[1].(pred)
+	return statement(func(ns *namespace) {
+		pred(ident, ns)
 	})
 }
 
@@ -65,6 +63,7 @@ func ihasaVarItz(args []interface{}) interface{} {
 	})
 }
 
+// Expressions
 func itzExpr(args []interface{}) interface{} {
 	return args[1]
 }
@@ -86,6 +85,37 @@ func ident(args []interface{}) interface{} {
 	ident := args[0].(string)
 	return expr(func(ns *namespace) interface{} {
 		return ns.getOrPanic(ident)
+	})
+}
+
+// If x is int64 and y is float64, promote x to float64 (and vice versa)
+func saem(x, y interface{}) bool {
+	switch v := x.(type) {
+	case float64:
+		switch w := y.(type) {
+		case int64:
+			y = float64(w)
+		}
+	case int64:
+		switch y.(type) {
+		case float64:
+			x = float64(v)
+		}
+	}
+	return x == y
+}
+
+func bothsaemXAnY(args []interface{}) interface{} {
+	x, y := args[1].(expr), args[3].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return saem(x(ns), y(ns))
+	})
+}
+
+func diffrintXAnY(args []interface{}) interface{} {
+	x, y := args[1].(expr), args[3].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return !saem(x(ns), y(ns))
 	})
 }
 
@@ -162,4 +192,38 @@ func quoshofXAnY(args []interface{}) interface{} {
 		func(a, b int64) int64 { return a / b },
 		func(a, b float64) float64 { return a / b },
 	)
+}
+
+func modofXAnY(args []interface{}) interface{} {
+	return makeMathExpr(args[1].(expr), args[3].(expr),
+		func(a, b int64) int64 { return a % b },
+		func(a, b float64) float64 { panic("Cannot use MOD OF with type NUMBAR") },
+	)
+}
+
+func castToYarn(x interface{}, isExplicit bool) string {
+	switch x := x.(type) {
+	case nil:
+		if isExplicit {
+			return ""
+		}
+		panic("Cannot implicitly cast NOOB to YARN")
+	case bool:
+		if x {
+			return "WIN"
+		}
+		return "FAIL"
+	default:
+		return fmt.Sprintf("%v", x)
+	}
+}
+
+func castToTroof(x interface{}) bool {
+	if x == nil {
+		return false
+	}
+	if s, ok := x.(string); ok && s == "" {
+		return false
+	}
+	return true
 }
