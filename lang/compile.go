@@ -218,12 +218,85 @@ func castToYarn(x interface{}, isExplicit bool) string {
 	}
 }
 
-func castToTroof(x interface{}) bool {
-	if x == nil {
+func troof(x interface{}) bool {
+	switch x := x.(type) {
+	case bool:
+		return x
+	case nil:
 		return false
+	case string:
+		return x != ""
+	case int64:
+		return x != 0
+	case float64:
+		return x != 0
+	default:
+		panic(fmt.Sprintf("Cannot cast type %t to TROOF", x))
 	}
-	if s, ok := x.(string); ok && s == "" {
+}
+
+func exprMoar(args []interface{}) interface{} {
+	rest := args[1].([]interface{})
+	list := make([]expr, len(rest)+1)
+	list[0] = args[0].(expr)
+	for i, e := range rest {
+		list[i+1] = e.(expr)
+	}
+	return list
+}
+
+func anExpr(args []interface{}) interface{} {
+	return args[1]
+}
+
+func notExpr(args []interface{}) interface{} {
+	e := args[1].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return !troof(e(ns))
+	})
+}
+
+func bothofXAnY(args []interface{}) interface{} {
+	x, y := args[1].(expr), args[3].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return troof(x(ns)) && troof(y(ns))
+	})
+}
+
+func eitherofXAnY(args []interface{}) interface{} {
+	x, y := args[1].(expr), args[3].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return troof(x(ns)) || troof(y(ns))
+	})
+}
+
+func wonofXAnY(args []interface{}) interface{} {
+	x, y := args[1].(expr), args[3].(expr)
+	return expr(func(ns *namespace) interface{} {
+		return !troof(x(ns)) == troof(y(ns))
+	})
+}
+
+func allofList(args []interface{}) interface{} {
+	exprs := args[1].([]expr)
+	return expr(func(ns *namespace) interface{} {
+		for _, e := range exprs {
+			if !troof(e(ns)) {
+				return false
+			}
+		}
+		return true
+	})
+}
+
+func anyofList(args []interface{}) interface{} {
+	exprs := args[1].([]expr)
+	return expr(func(ns *namespace) interface{} {
+		for _, e := range exprs {
+			if troof(e(ns)) {
+				return true
+			}
+		}
 		return false
-	}
-	return true
+	})
 }

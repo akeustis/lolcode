@@ -8,6 +8,8 @@ import (
 // ids of grammar nodes
 const (
 	Expr = iota + token.NumTokens
+	ExprList
+	MoarList
 	Statement
 	VarPredicate
 	Itz
@@ -30,13 +32,31 @@ func init() {
 	D.Rule(VarPredicate, emptyPredicate, token.EOL)
 	D.Rule(VarPredicate, rExpr, token.R, Expr)
 
+	// ExprList
+	D.Rule(ExprList, exprMoar, Expr, MoarList)
+	// MoarList
+	D.RepRule(MoarList, anExpr, -token.AN, Expr)
+
 	// Expr
+	// literal
 	D.Rule(Expr, literal, token.Literal)
+	// variable lookup
 	D.Rule(Expr, ident, token.Ident)
+	// boolean
+	D.Rule(Expr, notExpr, token.NOT, Expr)
+	D.Rule(Expr, bothofXAnY, token.BOTHOF, Expr, -token.AN, Expr)
+	D.Rule(Expr, eitherofXAnY, token.EITHEROF, Expr, -token.AN, Expr)
+	D.Rule(Expr, wonofXAnY, token.WONOF, Expr, -token.AN, Expr)
+	D.Rule(Expr, allofList, token.ALLOF, ExprList, -token.MKAY)
+	D.Rule(Expr, anyofList, token.ANYOF, ExprList, -token.MKAY)
+
+	// comparison
 	D.Rule(Expr, bothsaemXAnY, token.BOTHSAEM, Expr, -token.AN, Expr)
 	D.Rule(Expr, diffrintXAnY, token.DIFFRINT, Expr, -token.AN, Expr)
+	// math
 	D.Rule(Expr, sumofXAnY, token.SUMOF, Expr, token.AN, Expr)
 	D.Rule(Expr, diffofXAnY, token.DIFFOF, Expr, token.AN, Expr)
 	D.Rule(Expr, prodofXAnY, token.PRODUKTOF, Expr, token.AN, Expr)
 	D.Rule(Expr, quoshofXAnY, token.QUOSHUNTOF, Expr, token.AN, Expr)
+	D.Rule(Expr, modofXAnY, token.MODOF, Expr, token.AN, Expr)
 }
