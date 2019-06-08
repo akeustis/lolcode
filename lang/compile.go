@@ -41,6 +41,13 @@ func rExpr(args []interface{}) interface{} {
 	})
 }
 
+func isnowAtype(args []interface{}) interface{} {
+	cast := castFunc(args[1].(string))
+	return pred(func(id string, ns *namespace) {
+		ns.vars[id] = cast(ns.getOrPanic(id))
+	})
+}
+
 // statement
 func varPredicate(args []interface{}) interface{} {
 	ident := args[0].(string)
@@ -148,6 +155,48 @@ func getNumericValue(val interface{}, useFloat bool) interface{} {
 	}
 }
 
+func numbr(x interface{}) int64 { // explicit cast
+	switch x := x.(type) {
+	case nil:
+		return 0
+	case bool:
+		if x {
+			return 1
+		}
+		return 0
+	case int64:
+		return x
+	case float64:
+		return int64(x)
+	case string:
+		i, _ := strconv.ParseInt(x, 0, 64)
+		return i
+	default:
+		panic(fmt.Sprintf("Cannot cast %t to NUMBR", x))
+	}
+}
+
+func numbar(x interface{}) float64 { // explicit cast
+	switch x := x.(type) {
+	case nil:
+		return 0
+	case bool:
+		if x {
+			return 1
+		}
+		return 0
+	case int64:
+		return float64(x)
+	case float64:
+		return x
+	case string:
+		f, _ := strconv.ParseFloat(x, 64)
+		return f
+	default:
+		panic(fmt.Sprintf("Cannot cast %t to NUMBAR", x))
+	}
+}
+
 func makeMathExpr(left, right expr, intOper func(int64, int64) int64,
 	floatOper func(float64, float64) float64) expr {
 	return func(ns *namespace) interface{} {
@@ -201,7 +250,7 @@ func modofXAnY(args []interface{}) interface{} {
 	)
 }
 
-func castToYarn(x interface{}, isExplicit bool) string {
+func yarn(x interface{}, isExplicit bool) string {
 	switch x := x.(type) {
 	case nil:
 		if isExplicit {
@@ -233,6 +282,39 @@ func troof(x interface{}) bool {
 	default:
 		panic(fmt.Sprintf("Cannot cast type %t to TROOF", x))
 	}
+}
+
+func castFunc(t string) func(interface{}) interface{} {
+	switch t {
+	case "A NOOB":
+		return func(interface{}) interface{} {
+			return nil
+		}
+	case "A TROOF":
+		return func(x interface{}) interface{} {
+			return troof(x)
+		}
+	case "A NUMBR":
+		return func(x interface{}) interface{} {
+			return numbr(x)
+		}
+	case "A NUMBAR":
+		return func(x interface{}) interface{} {
+			return numbar(x)
+		}
+	default: // "A YARN"
+		return func(x interface{}) interface{} {
+			return yarn(x, true)
+		}
+	}
+}
+
+func maekXAtype(args []interface{}) interface{} {
+	e := args[1].(expr)
+	cast := castFunc(args[2].(string))
+	return expr(func(ns *namespace) interface{} {
+		return cast(e(ns))
+	})
 }
 
 func exprMoar(args []interface{}) interface{} {

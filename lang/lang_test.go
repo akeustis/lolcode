@@ -53,6 +53,15 @@ func TestBasicExpressions(t *testing.T) {
 		{"ALL OF 0.0", false},
 		{`ALL OF ""`, false},
 		{"ALL OF WIN WIN AN ANY OF FAIL FAIL WIN MKAY AN WIN MKAY", true},
+		{"MAEK FOO A NUMBAR", f(-10)},
+		{"MAEK 11.2 A NUMBR", i(11)},
+		{"MAEK FOO A YARN", "-10"},
+		{"MAEK FOO A TROOF", true},
+		{"MAEK FOO A NOOB", nil},
+		{"MAEK NEWB A NUMBR", i(0)},
+		{"MAEK NEWB A NUMBAR", f(0)},
+		{"MAEK NEWB A YARN", ""},
+		{"MAEK NEWB A TROOF", false},
 	}
 	for _, tc := range testCases {
 		_, ex, ok := D.Parse(Expr, tokenChan(tc.code+"\n"))
@@ -79,6 +88,7 @@ func TestBasicStatments(t *testing.T) {
 		{"I HAS A FISH", "FISH", nil},
 		{"I HAS A FISH ITZ WIN", "FISH", true},
 		{"FOO R \"hello\"", "FOO", "hello"},
+		{"BAR IS NOW A NUMBAR", "BAR", float64(5)},
 	}
 	for _, tc := range testCases {
 		ns := ns()

@@ -29,8 +29,12 @@ const (
 	ITZ
 	R
 	MAEK
-	A
-	ISNOWA
+	ISNOW
+	ANOOB
+	ATROOF
+	ANUMBR
+	ANUMBAR
+	AYARN
 	IIZ
 	BOTHSAEM
 	DIFFRINT
@@ -61,8 +65,12 @@ var phraseRoot = initPhrases([]phraseInit{
 	{ITZ, "ITZ"},
 	{R, "R"},
 	{MAEK, "MAEK"},
-	{A, "A"},
-	{ISNOWA, "IS NOW A "},
+	{ISNOW, "IS NOW"},
+	{ANOOB, "A NOOB"},
+	{ATROOF, "A TROOF"},
+	{ATROOF, "A YARN"},
+	{ATROOF, "A NUMBR"},
+	{ATROOF, "A NUMBAR"},
 	{IIZ, "I IZ"},
 	{BOTHSAEM, "BOTH SAEM"},
 	{DIFFRINT, "DIFFRINT"},

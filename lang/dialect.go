@@ -13,6 +13,7 @@ const (
 	Statement
 	VarPredicate
 	Itz
+	AType
 	NumNodes
 )
 
@@ -28,9 +29,18 @@ func init() {
 	// Itz
 	D.Rule(Itz, itzExpr, token.ITZ, Expr)
 
+	//AType
+	getFirst := func(args []interface{}) interface{} { return args[0] }
+	D.Rule(AType, getFirst, token.ANOOB)
+	D.Rule(AType, getFirst, token.ATROOF)
+	D.Rule(AType, getFirst, token.ANUMBR)
+	D.Rule(AType, getFirst, token.ANUMBAR)
+	D.Rule(AType, getFirst, token.AYARN)
+
 	//VarPredicate
 	D.Rule(VarPredicate, emptyPredicate, token.EOL)
 	D.Rule(VarPredicate, rExpr, token.R, Expr)
+	D.Rule(VarPredicate, isnowAtype, token.ISNOW, AType)
 
 	// ExprList
 	D.Rule(ExprList, exprMoar, Expr, MoarList)
@@ -42,6 +52,8 @@ func init() {
 	D.Rule(Expr, literal, token.Literal)
 	// variable lookup
 	D.Rule(Expr, ident, token.Ident)
+	// cast
+	D.Rule(Expr, maekXAtype, token.MAEK, Expr, AType)
 	// boolean
 	D.Rule(Expr, notExpr, token.NOT, Expr)
 	D.Rule(Expr, bothofXAnY, token.BOTHOF, Expr, -token.AN, Expr)
