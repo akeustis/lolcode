@@ -62,6 +62,11 @@ func TestBasicExpressions(t *testing.T) {
 		{"MAEK NEWB A NUMBAR", f(0)},
 		{"MAEK NEWB A YARN", ""},
 		{"MAEK NEWB A TROOF", false},
+		{"BIGGR OF 10.0 AN 20", f(20)},
+		{`BIGGR OF FOO AN BAR`, i(5)},
+		{`SMALLR OF "12" AN 0.0`, f(0)},
+		{`SMOOSH 1 2 BAR AN "LOL"`, "125LOL"},
+		{`SUM OF SMOOSH 4 AN 5 AN 6 MKAY AN 123`, i(579)},
 	}
 	for _, tc := range testCases {
 		_, ex, ok := D.Parse(Expr, tokenChan(tc.code+"\n"))

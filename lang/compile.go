@@ -3,6 +3,7 @@ package lang
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type namespace struct {
@@ -215,6 +216,44 @@ func makeMathExpr(left, right expr, intOper func(int64, int64) int64,
 	}
 }
 
+func biggrInt(a, b int64) int64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+func biggrFloat(a, b float64) float64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+func smallrInt(a, b int64) int64 {
+	if a > b {
+		return b
+	}
+	return a
+}
+
+func smallrFloat(a, b float64) float64 {
+	if a > b {
+		return b
+	}
+	return a
+}
+
+func biggrofXAnY(args []interface{}) interface{} {
+	return makeMathExpr(args[1].(expr), args[3].(expr),
+		biggrInt, biggrFloat)
+}
+
+func smallrofXAnY(args []interface{}) interface{} {
+	return makeMathExpr(args[1].(expr), args[3].(expr),
+		smallrInt, smallrFloat)
+}
+
 func sumofXAnY(args []interface{}) interface{} {
 	return makeMathExpr(args[1].(expr), args[3].(expr),
 		func(a, b int64) int64 { return a + b },
@@ -307,6 +346,17 @@ func castFunc(t string) func(interface{}) interface{} {
 			return yarn(x, true)
 		}
 	}
+}
+
+func smooshList(args []interface{}) interface{} {
+	exprs := args[1].([]expr)
+	return expr(func(ns *namespace) interface{} {
+		var builder strings.Builder
+		for _, e := range exprs {
+			builder.WriteString(yarn(e(ns), false))
+		}
+		return builder.String()
+	})
 }
 
 func maekXAtype(args []interface{}) interface{} {

@@ -43,7 +43,7 @@ func init() {
 	D.Rule(VarPredicate, isnowAtype, token.ISNOW, AType)
 
 	// ExprList
-	D.Rule(ExprList, exprMoar, Expr, MoarList)
+	D.Rule(ExprList, exprMoar, Expr, MoarList, -token.MKAY)
 	// MoarList
 	D.RepRule(MoarList, anExpr, -token.AN, Expr)
 
@@ -59,16 +59,19 @@ func init() {
 	D.Rule(Expr, bothofXAnY, token.BOTHOF, Expr, -token.AN, Expr)
 	D.Rule(Expr, eitherofXAnY, token.EITHEROF, Expr, -token.AN, Expr)
 	D.Rule(Expr, wonofXAnY, token.WONOF, Expr, -token.AN, Expr)
-	D.Rule(Expr, allofList, token.ALLOF, ExprList, -token.MKAY)
-	D.Rule(Expr, anyofList, token.ANYOF, ExprList, -token.MKAY)
-
+	D.Rule(Expr, allofList, token.ALLOF, ExprList)
+	D.Rule(Expr, anyofList, token.ANYOF, ExprList)
 	// comparison
 	D.Rule(Expr, bothsaemXAnY, token.BOTHSAEM, Expr, -token.AN, Expr)
 	D.Rule(Expr, diffrintXAnY, token.DIFFRINT, Expr, -token.AN, Expr)
 	// math
+	D.Rule(Expr, biggrofXAnY, token.BIGGROF, Expr, token.AN, Expr)
+	D.Rule(Expr, smallrofXAnY, token.SMALLROF, Expr, token.AN, Expr)
 	D.Rule(Expr, sumofXAnY, token.SUMOF, Expr, token.AN, Expr)
 	D.Rule(Expr, diffofXAnY, token.DIFFOF, Expr, token.AN, Expr)
 	D.Rule(Expr, prodofXAnY, token.PRODUKTOF, Expr, token.AN, Expr)
 	D.Rule(Expr, quoshofXAnY, token.QUOSHUNTOF, Expr, token.AN, Expr)
 	D.Rule(Expr, modofXAnY, token.MODOF, Expr, token.AN, Expr)
+	// smoosh
+	D.Rule(Expr, smooshList, token.SMOOSH, ExprList)
 }
